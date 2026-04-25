@@ -2,7 +2,10 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import API from '../utils/api';
+<<<<<<< HEAD
 // import EventTemplateSelector from '../components/EventTemplateSelector';
+=======
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 import EventTemplateSelector from '../components/EventTemplateSelector';
 
 const CreateEvent = () => {
@@ -65,6 +68,10 @@ const CreateEvent = () => {
       maxAttendees: template.maxAttendees.toString()
     });
   };
+<<<<<<< HEAD
+=======
+  <EventTemplateSelector onSelectTemplate={handleTemplateSelect} />
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 
   if (!user || (user.role !== 'organizer' && user.role !== 'admin')) {
     return (
@@ -81,6 +88,7 @@ const CreateEvent = () => {
         <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
           <h1 className="text-3xl font-bold mb-8">Create New Event</h1>
 
+<<<<<<< HEAD
   {error && (
     <div className="mb-6 p-4 bg-red-100 text-red-800 rounded">
       {error}
@@ -90,6 +98,15 @@ const CreateEvent = () => {
   <EventTemplateSelector onSelectTemplate={handleTemplateSelect} />
 
   <form onSubmit={handleSubmit}>
+=======
+          {error && (
+            <div className="mb-6 p-4 bg-red-100 text-red-800 rounded">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <label className="block text-gray-700 mb-2 font-semibold">Event Title *</label>

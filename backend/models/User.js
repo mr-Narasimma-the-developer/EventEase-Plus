@@ -19,10 +19,13 @@ const userSchema = new mongoose.Schema({
     enum: ['participant', 'organizer', 'vendor', 'admin'],
     default: 'participant'
   },
+<<<<<<< HEAD
    verified: {
     type: Boolean,
     default: false
   },
+=======
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   preferences: {
     eventCategories: [String],
     notificationEnabled: { type: Boolean, default: true }
@@ -65,6 +68,7 @@ pincode: {
 bio: {
   type: String
 }
+<<<<<<< HEAD
 
 
 }, { timestamps: true });
@@ -72,4 +76,8 @@ bio: {
 
 
 
+=======
+}, { timestamps: true });
+
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 module.exports = mongoose.model('User', userSchema);

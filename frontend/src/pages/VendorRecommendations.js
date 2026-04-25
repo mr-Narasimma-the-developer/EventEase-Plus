@@ -196,7 +196,11 @@ const VendorRecommendations = () => {
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center space-x-4">
                             <div className="bg-gradient-to-br from-indigo-600 to-purple-600 text-white w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold">
+<<<<<<< HEAD
                               #{index + 1}7
+=======
+                              #{index + 1}
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
                             </div>
                             <div>
                               <Link 

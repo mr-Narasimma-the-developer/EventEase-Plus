@@ -14,6 +14,7 @@ const EventHeatmap = () => {
     fetchEvents();
   }, []);
 
+<<<<<<< HEAD
 const fetchEvents = async () => {
   try {
     const { data } = await API.get('/events/public');
@@ -80,6 +81,28 @@ const fetchEvents = async () => {
   // };
 
   // // Calculate event density by location
+=======
+  const fetchEvents = async () => {
+    try {
+      const { data } = await API.get('/events/public');
+      
+      // Add mock coordinates for demo (in real app, use Google Geocoding API)
+      const eventsWithCoords = data.map(event => ({
+        ...event,
+        lat: 28.6139 + (Math.random() - 0.5) * 10, // Random near Delhi
+        lng: 77.2090 + (Math.random() - 0.5) * 10
+      }));
+
+      setEvents(eventsWithCoords);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      setLoading(false);
+    }
+  };
+
+  // Calculate event density by location
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   const getLocationDensity = () => {
     const densityMap = {};
     events.forEach(event => {
@@ -126,6 +149,7 @@ const fetchEvents = async () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Map */}
+<<<<<<< HEAD
          <div className="lg:col-span-2 bg-white rounded-lg shadow-lg overflow-hidden">
   <div className="h-[600px] w-full">
     <MapContainer 
@@ -164,6 +188,44 @@ const fetchEvents = async () => {
   </div>
 </div>
 
+=======
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="h-[600px]">
+              <MapContainer 
+                center={defaultCenter} 
+                zoom={5} 
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                />
+                
+                {events.map(event => (
+                  <CircleMarker
+                    key={event._id}
+                    center={[event.lat, event.lng]}
+                    radius={10}
+                    fillColor="#4F46E5"
+                    fillOpacity={0.6}
+                    color="#ffffff"
+                    weight={2}
+                  >
+                    <Popup>
+                      <div className="p-2">
+                        <h3 className="font-bold">{event.title}</h3>
+                        <p className="text-sm text-gray-600">{event.location}</p>
+                        <p className="text-sm text-gray-600">
+                          {new Date(event.eventDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                ))}
+              </MapContainer>
+            </div>
+          </div>
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 
           {/* Density Ranking */}
           <div className="bg-white rounded-lg shadow-lg p-6">

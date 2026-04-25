@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const vendorProfileSchema = new mongoose.Schema({
+<<<<<<< HEAD
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -72,5 +73,22 @@ const vendorProfileSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+=======
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+  portfolioImages: [{ type: String }],
+  bio: { type: String },
+  specializations: [{ type: String }],
+  completedEvents: { type: Number, default: 0 },
+  responseRate: { type: Number, default: 0 },
+  trustScore: { type: Number, default: 0 },
+  isVerified: { type: Boolean, default: false },
+  verificationBadge: { type: String },
+  workGallery: [{
+    image: String,
+    title: String,
+    eventType: String
+  }]
+}, { timestamps: true });
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 
 module.exports = mongoose.model('VendorProfile', vendorProfileSchema);

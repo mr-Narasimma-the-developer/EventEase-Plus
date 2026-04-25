@@ -168,6 +168,7 @@ const fetchVendorData = async () => {
             ))}
           </div>
         )}
+<<<<<<< HEAD
 {/* Write Review Button */}
 <div className="mb-8">
   <Link
@@ -185,6 +186,8 @@ const fetchVendorData = async () => {
     {/* rest of reviews code */}
   </div>
 )}
+=======
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 
         {/* Reviews Section */}
         {reviews.length > 0 && (

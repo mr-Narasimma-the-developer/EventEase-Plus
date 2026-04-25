@@ -1,4 +1,5 @@
 const express = require('express');
+<<<<<<< HEAD
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const Service = require('../models/Service');
@@ -163,5 +164,31 @@ router.delete('/:id', protect, async (req, res) => {
     res.status(500).json({ message: 'Error deleting service', error: error.message });
   }
 });
+=======
+const {
+  createService,
+  getServices,
+  getServiceById,
+  updateService,
+  deleteService,
+  getMyServices
+} = require('../controllers/serviceController');
+const { protect, providerOnly } = require('../middleware/authMiddleware');
+
+const router = express.Router();
+
+router.route('/')
+  .get(getServices)
+  .post(protect, providerOnly, createService);
+
+router.get('/my-services', protect, providerOnly, getMyServices);
+router.put('/:id', protect, updateService);
+router.delete('/:id', protect, deleteService);
+
+router.route('/:id')
+  .get(getServiceById)
+  .put(protect, providerOnly, updateService)
+  .delete(protect, providerOnly, deleteService);
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 
 module.exports = router;

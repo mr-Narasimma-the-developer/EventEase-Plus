@@ -41,6 +41,7 @@ const registerUser = async (req, res) => {
         token: generateToken(user._id)
       });
     }
+<<<<<<< HEAD
     if(user.role !== "admin"){
       return res.status(403).json({message:"Not admin"})
     }
@@ -54,6 +55,8 @@ res.json({
 token,
 user
 })
+=======
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

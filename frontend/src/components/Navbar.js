@@ -108,6 +108,7 @@ const Navbar = () => {
 
                       {/* Organizer Options */}
                       {user.role === 'organizer' && (
+<<<<<<< HEAD
   <>
     <Link
       to="/my-events"
@@ -136,6 +137,37 @@ const Navbar = () => {
     <div className="border-t my-1"></div>
   </>
 )}
+=======
+                        <>
+                          <Link
+                            to="/my-events"
+                            className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
+                            onClick={closeDropdown}
+                          >
+                            <span className="mr-2">📅</span>
+                            My Events
+                          </Link>
+                          <Link
+                            to="/budget-estimator"
+                            className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
+                            onClick={closeDropdown}
+                          >
+                            <span className="mr-2">💰</span>
+                            Budget Estimator
+                          </Link>
+                          <Link
+                            to="/vendor-recommendations"
+                            className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
+                            onClick={closeDropdown}
+                          >
+                            <span className="mr-2">🎯</span>
+                            Find Vendors (AI)
+                          </Link>
+                          <div className="border-t my-1"></div>
+                        </>
+                      )}
+
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
                       {/* Admin Options */}
                       {user.role === 'admin' && (
                         <>
@@ -160,6 +192,7 @@ const Navbar = () => {
                         <span className="mr-2">🔔</span>
                         Notifications
                       </Link>
+<<<<<<< HEAD
                       <hr className="my-2" />
 
 
@@ -180,6 +213,8 @@ const Navbar = () => {
   <span className="mr-2">🔔</span>
   Notifications
 </Link>
+=======
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
                       <Link
                         to="/profile"
                         className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
@@ -259,6 +294,7 @@ const Navbar = () => {
                     </Link>
                   </>
                 )}
+<<<<<<< HEAD
 
                 {user.role === 'vendor' && (
   <>
@@ -317,6 +353,15 @@ const Navbar = () => {
   Notifications
 </Link> */}
 
+=======
+                
+                <Link to="/notifications" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
+                  🔔 Notifications
+                </Link>
+                <Link to="/profile" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
+                  👤 Profile
+                </Link>
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left py-2 hover:text-indigo-200"

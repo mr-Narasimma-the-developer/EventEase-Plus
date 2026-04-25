@@ -1,4 +1,5 @@
 const User = require('../models/User');
+<<<<<<< HEAD
 const Event = require('../models/Event');
 const Service = require('../models/Service');
 const Booking = require('../models/Booking');
@@ -42,37 +43,166 @@ const verifyVendorWithBadge = async (req, res) => {
       vendor
     });
 
+=======
+const Service = require('../models/Service');
+const Booking = require('../models/Booking');
+
+// Get All Users
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Verify Provider
+const verifyProvider = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role !== 'provider') {
+      return res.status(400).json({ message: 'User is not a provider' });
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    res.json({ message: 'Provider verified successfully', user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Get Dashboard Stats
+const getDashboardStats = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalProviders = await User.countDocuments({ role: 'provider' });
+    const totalCustomers = await User.countDocuments({ role: 'customer' });
+    const verifiedProviders = await User.countDocuments({ role: 'provider', isVerified: true });
+    const totalServices = await Service.countDocuments();
+    const totalBookings = await Booking.countDocuments();
+    const pendingBookings = await Booking.countDocuments({ status: 'pending' });
+    const acceptedBookings = await Booking.countDocuments({ status: 'accepted' });
+
+    res.json({
+      totalUsers,
+      totalProviders,
+      totalCustomers,
+      verifiedProviders,
+      totalServices,
+      totalBookings,
+      pendingBookings,
+      acceptedBookings
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Delete User
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+// ADD THESE NEW FUNCTIONS
+
+const VendorProfile = require('../models/VendorProfile');
+const Event = require('../models/Event');
+const Review = require('../models/Review');
+
+// Verify Vendor with Badge
+const verifyVendorWithBadge = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { badgeType } = req.body;
+    
+    const user = await User.findById(userId);
+    if (!user || user.role !== 'vendor') {
+      return res.status(400).json({ message: 'Invalid vendor' });
+    }
+
+    user.isVerified = true;
+    await user.save();
+
+    let profile = await VendorProfile.findOne({ userId });
+    if (!profile) {
+      profile = await VendorProfile.create({ userId });
+    }
+
+    profile.isVerified = true;
+    profile.verificationBadge = badgeType || 'verified';
+    await profile.save();
+
+    res.json({ message: 'Vendor verified successfully', user, profile });
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   } catch (error) {
     res.status(500).json({ message: 'Error verifying vendor', error: error.message });
   }
 };
 
+<<<<<<< HEAD
 // Get All Events
+=======
+// Get All Events (for moderation)
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 const getAllEvents = async (req, res) => {
   try {
     const events = await Event.find()
       .populate('organizerId', 'name email')
+<<<<<<< HEAD
       .sort('-createdAt')
       .limit(100);
 
     res.json(events);
 
+=======
+      .sort('-createdAt');
+    
+    res.json(events);
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   } catch (error) {
     res.status(500).json({ message: 'Error fetching events', error: error.message });
   }
 };
 
+<<<<<<< HEAD
 // Delete Event
 const deleteEvent = async (req, res) => {
   try {
     const { eventId } = req.params;
 
+=======
+// Delete Event (moderation)
+const deleteEvent = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { reason } = req.body;
+    
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
     const event = await Event.findById(eventId);
     
     if (!event) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
+<<<<<<< HEAD
     // Delete associated attendance records
     await EventAttendance.deleteMany({ eventId });
 
@@ -81,6 +211,11 @@ const deleteEvent = async (req, res) => {
 
     res.json({ message: 'Event deleted successfully' });
 
+=======
+    await Event.findByIdAndDelete(eventId);
+    
+    res.json({ message: 'Event deleted successfully' });
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   } catch (error) {
     res.status(500).json({ message: 'Error deleting event', error: error.message });
   }
@@ -89,6 +224,7 @@ const deleteEvent = async (req, res) => {
 // Get System Analytics
 const getSystemAnalytics = async (req, res) => {
   try {
+<<<<<<< HEAD
     const totalUsers = await User.countDocuments();
     const totalEvents = await Event.countDocuments();
     const totalServices = await Service.countDocuments();
@@ -132,6 +268,44 @@ const getSystemAnalytics = async (req, res) => {
 };
 
 // Get Fraud Alerts
+=======
+    const totalEvents = await Event.countDocuments();
+    const upcomingEvents = await Event.countDocuments({ status: 'upcoming' });
+    const completedEvents = await Event.countDocuments({ status: 'completed' });
+    
+    const totalVendors = await User.countDocuments({ role: 'vendor' });
+    const verifiedVendors = await VendorProfile.countDocuments({ isVerified: true });
+    
+    const totalParticipants = await User.countDocuments({ role: 'participant' });
+    const totalOrganizers = await User.countDocuments({ role: 'organizer' });
+    
+    const totalReviews = await Review.countDocuments();
+    const avgRating = await Review.aggregate([
+      { $group: { _id: null, avg: { $avg: '$rating' } } }
+    ]);
+
+    res.json({
+      events: {
+        total: totalEvents,
+        upcoming: upcomingEvents,
+        completed: completedEvents
+      },
+      users: {
+        participants: totalParticipants,
+        organizers: totalOrganizers,
+        vendors: totalVendors,
+        verifiedVendors
+      },
+      reviews: {
+        total: totalReviews,
+        averageRating: avgRating.length > 0 ? avgRating[0].avg : 0
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching analytics', error: error.message });
+  }
+};
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 const getFraudAlerts = async (req, res) => {
   try {
     const vendors = await VendorProfile.find()
@@ -142,18 +316,27 @@ const getFraudAlerts = async (req, res) => {
     const fraudAlerts = [];
 
     for (const vendor of vendors) {
+<<<<<<< HEAD
       if (!vendor.userId) continue;
 
       const vendorReviews = reviews.filter(r => 
         r.targetType === 'User' && 
         r.targetId && 
         r.targetId.toString() === vendor.userId._id.toString()
+=======
+      const vendorReviews = reviews.filter(r => 
+        r.targetType === 'vendor' && r.targetId.toString() === vendor.userId._id.toString()
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
       );
 
       let suspicionScore = 0;
       const reasons = [];
 
+<<<<<<< HEAD
       // Check 1: Too many 5-star reviews recently
+=======
+      // Check 1: Too many 5-star reviews in short time
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
       const recentReviews = vendorReviews.filter(r => 
         new Date(r.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       );
@@ -163,20 +346,32 @@ const getFraudAlerts = async (req, res) => {
         reasons.push(`${fiveStarRecent} five-star reviews in last 7 days`);
       }
 
+<<<<<<< HEAD
       // Check 2: New account with high trust score
+=======
+      // Check 2: New vendor with high trust score
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
       const accountAge = (Date.now() - new Date(vendor.userId.createdAt)) / (1000 * 60 * 60 * 24);
       if (accountAge < 30 && vendor.trustScore > 80) {
         suspicionScore += 25;
         reasons.push('New account (<30 days) with high trust score');
       }
 
+<<<<<<< HEAD
       // Check 3: Many events but few reviews
+=======
+      // Check 3: Claimed events but no reviews
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
       if (vendor.completedEvents > 10 && vendorReviews.length < 3) {
         suspicionScore += 20;
         reasons.push('Many events claimed but few reviews');
       }
 
+<<<<<<< HEAD
       // Check 4: Reviews from same accounts
+=======
+      // Check 4: All reviews from same reviewers
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
       const reviewerIds = vendorReviews.map(r => r.reviewerId._id.toString());
       const uniqueReviewers = new Set(reviewerIds).size;
       if (vendorReviews.length >= 5 && uniqueReviewers < 3) {
@@ -184,15 +379,24 @@ const getFraudAlerts = async (req, res) => {
         reasons.push('Multiple reviews from same accounts');
       }
 
+<<<<<<< HEAD
       // Check 5: Perfect rating
       const avgRating = vendorReviews.length > 0 
         ? vendorReviews.reduce((sum, r) => sum + r.rating, 0) / vendorReviews.length 
         : 0;
+=======
+      // Check 5: Perfect rating pattern
+      const avgRating = vendorReviews.reduce((sum, r) => sum + r.rating, 0) / vendorReviews.length;
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
       if (vendorReviews.length >= 5 && avgRating === 5) {
         suspicionScore += 20;
         reasons.push('Perfect 5.0 rating across all reviews');
       }
 
+<<<<<<< HEAD
+=======
+      // Flag if suspicion score is high
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
       if (suspicionScore >= 40) {
         fraudAlerts.push({
           vendorId: vendor.userId._id,
@@ -208,6 +412,10 @@ const getFraudAlerts = async (req, res) => {
       }
     }
 
+<<<<<<< HEAD
+=======
+    // Sort by suspicion score (highest first)
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
     fraudAlerts.sort((a, b) => b.suspicionScore - a.suspicionScore);
 
     res.json({
@@ -221,6 +429,7 @@ const getFraudAlerts = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 // Get All Users
 const getAllUsers = async (req, res) => {
   try {
@@ -424,10 +633,19 @@ const rejectVendorVerification = async (req, res) => {
 };
 
 module.exports = {
+=======
+
+module.exports = {
+  getAllUsers,
+  verifyProvider,
+  getDashboardStats,
+  deleteUser,
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   verifyVendorWithBadge,
   getAllEvents,
   deleteEvent,
   getSystemAnalytics,
+<<<<<<< HEAD
   getFraudAlerts,
   getAllUsers,
   updateUserRole,
@@ -436,3 +654,7 @@ module.exports = {
   approveVendorVerification,
   rejectVendorVerification
 };
+=======
+  getFraudAlerts
+};
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710

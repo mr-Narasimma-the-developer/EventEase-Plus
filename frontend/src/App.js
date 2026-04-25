@@ -6,7 +6,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AIChatbot from './components/AIChatbot';
 import EditService from './pages/EditService';
 import EditEvent from './pages/EditEvent';
+<<<<<<< HEAD
 import VendorVerification from './pages/VendorVerification'
+=======
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 
 // Pages
 import Home from './pages/Home';
@@ -70,7 +73,10 @@ function App() {
           <Route path="/vendor/portfolio" element={<ProtectedRoute><VendorPortfolio /></ProtectedRoute>} />
           <Route path="/vendor-profile/:id" element={<VendorProfileView />} />
           <Route path="/vendor-comparison" element={<VendorComparison />} />
+<<<<<<< HEAD
           <Route path="/vendor/verification" element={<ProtectedRoute><VendorVerification /></ProtectedRoute>} />
+=======
+>>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
           
           {/* Organizer Tools */}
           <Route path="/budget-estimator" element={<ProtectedRoute><BudgetEstimator /></ProtectedRoute>} />
