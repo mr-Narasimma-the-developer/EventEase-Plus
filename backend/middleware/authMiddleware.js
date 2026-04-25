@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
-<<<<<<< HEAD
 // Protect routes - verify JWT token
 const protect = async (req, res, next) => {
   try {
@@ -70,41 +69,3 @@ module.exports = {
   vendor,
   providerOnly: vendor   // 🔥 THIS LINE FIXES YOUR ERROR
 };
-=======
-const protect = async (req, res, next) => {
-  let token;
-
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(decoded.id).select('-password');
-      next();
-    } catch (error) {
-      return res.status(401).json({ message: 'Not authorized, token failed' });
-    }
-  }
-
-  if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
-  }
-};
-
-const adminOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    next();
-  } else {
-    res.status(403).json({ message: 'Admin access only' });
-  }
-};
-
-const providerOnly = (req, res, next) => {
-  if (req.user && (req.user.role === 'provider' || req.user.role === 'admin')) {
-    next();
-  } else {
-    res.status(403).json({ message: 'Provider access only' });
-  }
-};
-
-module.exports = { protect, adminOnly, providerOnly };
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710

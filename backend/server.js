@@ -1,5 +1,4 @@
 const express = require('express');
-<<<<<<< HEAD
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
@@ -18,13 +17,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Import routes
-=======
-const dotenv = require('dotenv');
-const cors = require('cors');
-const connectDB = require('./config/db');
-
-// Route imports
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 const authRoutes = require('./routes/authRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
@@ -35,7 +27,6 @@ const vendorRoutes = require('./routes/vendorRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const aiRoutes = require('./routes/aiRoutes');
-<<<<<<< HEAD
 const predictionRoutes = require('./routes/predictionRoutes');
 
 // Mount routes with error handling
@@ -90,49 +81,6 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-=======
-
-dotenv.config();
-connectDB();
-
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Health check
-app.get('/', (req, res) => {
-  res.json({ 
-    message: 'EventEase+ Multi-Role Event Ecosystem API',
-    version: '2.0',
-    status: 'running'
-  });
-});
-
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/services', serviceRoutes);
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/recommendations', recommendationRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/vendors', vendorRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/ai', aiRoutes);
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
-});
-
-const PORT = process.env.PORT || 5000;
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
   console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);

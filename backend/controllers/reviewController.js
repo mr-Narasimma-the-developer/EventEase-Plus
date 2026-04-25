@@ -1,9 +1,6 @@
 const Review = require('../models/Review');
 const VendorProfile = require('../models/VendorProfile');
-<<<<<<< HEAD
 const Event = require('../models/Event');
-=======
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 const cloudinary = require('../config/cloudinary');
 
 // Submit Review
@@ -11,15 +8,12 @@ const submitReview = async (req, res) => {
   try {
     const { targetId, targetType, rating, comment } = req.body;
 
-<<<<<<< HEAD
     // Validate target type
     const validTypes = ['User', 'Event', 'Service'];
     if (!validTypes.includes(targetType)) {
       return res.status(400).json({ message: 'Invalid target type' });
     }
 
-=======
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
     // Check if already reviewed
     const existingReview = await Review.findOne({
       reviewerId: req.user._id,
@@ -35,17 +29,12 @@ const submitReview = async (req, res) => {
     let imageUrls = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-<<<<<<< HEAD
         try {
           const result = await cloudinary.uploader.upload(file.path);
           imageUrls.push(result.secure_url);
         } catch (uploadError) {
           console.error('Image upload error:', uploadError);
         }
-=======
-        const result = await cloudinary.uploader.upload(file.path);
-        imageUrls.push(result.secure_url);
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
       }
     }
 
@@ -53,39 +42,23 @@ const submitReview = async (req, res) => {
       reviewerId: req.user._id,
       targetId,
       targetType,
-<<<<<<< HEAD
       rating: Number(rating),
-=======
-      rating,
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
       comment,
       images: imageUrls
     });
 
-<<<<<<< HEAD
     // Update vendor trust score if reviewing a vendor (User with vendor role)
     if (targetType === 'User') {
       const vendor = await VendorProfile.findOne({ userId: targetId });
       if (vendor) {
         const allReviews = await Review.find({ targetId, targetType: 'User' });
-=======
-    // Update vendor trust score if reviewing vendor
-    if (targetType === 'vendor') {
-      const vendor = await VendorProfile.findOne({ userId: targetId });
-      if (vendor) {
-        const allReviews = await Review.find({ targetId, targetType: 'vendor' });
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
         const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
         
         // Recalculate trust score
         const reviewScore = (avgRating / 5) * 100 * 0.4;
         const eventScore = Math.min((vendor.completedEvents / 50) * 100, 100) * 0.3;
         const verificationScore = vendor.isVerified ? 100 * 0.2 : 0;
-<<<<<<< HEAD
         const responseScore = 80 * 0.1;
-=======
-        const responseScore = 80 * 0.1; // Default response rate
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
         
         vendor.trustScore = Math.round(reviewScore + eventScore + verificationScore + responseScore);
         await vendor.save();
@@ -101,10 +74,7 @@ const submitReview = async (req, res) => {
     });
 
   } catch (error) {
-<<<<<<< HEAD
     console.error('Review submission error:', error);
-=======
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
     res.status(500).json({ message: 'Error submitting review', error: error.message });
   }
 };
@@ -129,22 +99,14 @@ const getReviews = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
 // Get Vendor Reviews
-=======
-// Get Vendor Reviews (specific endpoint for vendor profiles)
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 const getVendorReviews = async (req, res) => {
   try {
     const { vendorId } = req.params;
 
     const reviews = await Review.find({
       targetId: vendorId,
-<<<<<<< HEAD
       targetType: 'User'  // Changed to 'User' for vendor reviews
-=======
-      targetType: 'vendor'
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
     })
       .populate('reviewerId', 'name email')
       .sort('-createdAt');

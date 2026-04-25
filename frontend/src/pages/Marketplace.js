@@ -19,7 +19,6 @@ const Marketplace = () => {
   }, []);
 
   const fetchServices = async () => {
-<<<<<<< HEAD
   try {
     const params = new URLSearchParams();
     if (filters.category) params.append('category', filters.category);
@@ -58,40 +57,6 @@ const Marketplace = () => {
     setLoading(false);
   }
 };
-=======
-    try {
-      const params = new URLSearchParams();
-      if (filters.category) params.append('category', filters.category);
-      if (filters.location) params.append('location', filters.location);
-      if (filters.minPrice) params.append('minPrice', filters.minPrice);
-      if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
-
-      const { data } = await API.get(`/services?${params.toString()}`);
-      
-      // Fetch vendor profiles and trust scores for each service
-      const servicesWithVendorData = await Promise.all(
-        data.map(async (service) => {
-          try {
-            const vendorResponse = await API.get(`/vendors/${service.providerId._id}`);
-            return {
-              ...service,
-              vendorTrustScore: vendorResponse.data.trustScore,
-              vendorVerified: vendorResponse.data.profile?.isVerified || false
-            };
-          } catch (error) {
-            return service;
-          }
-        })
-      );
-
-      setServices(servicesWithVendorData);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching services:', error);
-      setLoading(false);
-    }
-  };
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 
   const toggleCompare = (service) => {
   const vendorId = service.providerId._id;

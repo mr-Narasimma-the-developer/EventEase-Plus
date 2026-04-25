@@ -1,5 +1,4 @@
 const VendorProfile = require('../models/VendorProfile');
-<<<<<<< HEAD
 const User = require('../models/User');
 const Review = require('../models/Review');
 const cloudinary = require('../config/cloudinary');
@@ -62,50 +61,12 @@ const getProfile = async (req, res) => {
         : 0
     });
 
-=======
-const Review = require('../models/Review');
-const Service = require('../models/Service');
-const User = require('../models/User');
-
-// Calculate Trust Score
-const calculateTrustScore = (reviews, completedEvents, isVerified, responseRate) => {
-  const avgRating = reviews.length > 0 
-    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
-    : 0;
-  
-  const reviewScore = (avgRating / 5) * 100;
-  const eventScore = Math.min(completedEvents * 2, 100);
-  const verificationScore = isVerified ? 100 : 0;
-  const responseScore = responseRate * 100;
-
-  const trustScore = (
-    (reviewScore * 0.4) +
-    (eventScore * 0.3) +
-    (verificationScore * 0.2) +
-    (responseScore * 0.1)
-  );
-
-  return Math.round(trustScore * 10) / 10;
-};
-
-// Get/Create Vendor Profile
-const getVendorProfile = async (req, res) => {
-  try {
-    let profile = await VendorProfile.findOne({ userId: req.user._id });
-    
-    if (!profile) {
-      profile = await VendorProfile.create({ userId: req.user._id });
-    }
-
-    res.json(profile);
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   } catch (error) {
     res.status(500).json({ message: 'Error fetching profile', error: error.message });
   }
 };
 
 // Update Vendor Profile
-<<<<<<< HEAD
 const updateProfile = async (req, res) => {
   try {
     const { bio, specializations } = req.body;
@@ -148,34 +109,10 @@ const updateProfile = async (req, res) => {
 
   } catch (error) {
     console.error('Profile update error:', error);
-=======
-const updateVendorProfile = async (req, res) => {
-  try {
-    const { bio, specializations } = req.body;
-    
-    let profile = await VendorProfile.findOne({ userId: req.user._id });
-    
-    if (!profile) {
-      profile = await VendorProfile.create({ userId: req.user._id });
-    }
-
-    profile.bio = bio || profile.bio;
-    profile.specializations = specializations || profile.specializations;
-    
-    if (req.files && req.files.length > 0) {
-      const newImages = req.files.map(file => file.path);
-      profile.portfolioImages = [...profile.portfolioImages, ...newImages];
-    }
-
-    await profile.save();
-    res.json(profile);
-  } catch (error) {
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
     res.status(500).json({ message: 'Error updating profile', error: error.message });
   }
 };
 
-<<<<<<< HEAD
 // Search Vendors
 const searchVendors = async (req, res) => {
   try {
@@ -230,56 +167,21 @@ const getVendorById = async (req, res) => {
       targetId: id, 
       targetType: 'User' 
     }).populate('reviewerId', 'name email');
-=======
-// Get Vendor with Trust Score
-const getVendorById = async (req, res) => {
-  try {
-    const profile = await VendorProfile.findOne({ userId: req.params.id })
-      .populate('userId', 'name email phone location isVerified');
-    
-    if (!profile) {
-      return res.status(404).json({ message: 'Vendor not found' });
-    }
-
-    const reviews = await Review.find({ 
-      targetId: req.params.id, 
-      targetType: 'vendor' 
-    }).populate('reviewerId', 'name');
-
-    const services = await Service.find({ providerId: req.params.id });
-
-    const trustScore = calculateTrustScore(
-      reviews,
-      profile.completedEvents,
-      profile.isVerified,
-      profile.responseRate
-    );
-
-    profile.trustScore = trustScore;
-    await profile.save();
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 
     res.json({
       profile,
       reviews,
-<<<<<<< HEAD
       reviewCount: reviews.length,
       avgRating: reviews.length > 0 
         ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
         : 0
     });
 
-=======
-      services,
-      trustScore
-    });
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   } catch (error) {
     res.status(500).json({ message: 'Error fetching vendor', error: error.message });
   }
 };
 
-<<<<<<< HEAD
 // Upload Verification Documents
 const uploadVerificationDocuments = async (req, res) => {
   try {
@@ -392,55 +294,10 @@ const recalculateTrustScore = async (vendorId) => {
 
   } catch (error) {
     console.error('Trust score calculation error:', error);
-=======
-// Search Vendors with Trust Score Ranking
-const searchVendors = async (req, res) => {
-  try {
-    const { category, location, minTrustScore } = req.query;
-    
-    let filter = {};
-    
-    const profiles = await VendorProfile.find(filter)
-      .populate('userId', 'name email phone location isVerified');
-
-    const vendorsWithScores = await Promise.all(
-      profiles.map(async (profile) => {
-        const reviews = await Review.find({ 
-          targetId: profile.userId._id, 
-          targetType: 'vendor' 
-        });
-
-        const trustScore = calculateTrustScore(
-          reviews,
-          profile.completedEvents,
-          profile.isVerified,
-          profile.responseRate
-        );
-
-        return {
-          ...profile.toObject(),
-          trustScore
-        };
-      })
-    );
-
-    let filtered = vendorsWithScores;
-    
-    if (minTrustScore) {
-      filtered = filtered.filter(v => v.trustScore >= Number(minTrustScore));
-    }
-
-    filtered.sort((a, b) => b.trustScore - a.trustScore);
-
-    res.json(filtered);
-  } catch (error) {
-    res.status(500).json({ message: 'Error searching vendors', error: error.message });
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   }
 };
 
 module.exports = {
-<<<<<<< HEAD
   createProfile,
   getProfile,
   updateProfile,
@@ -449,10 +306,4 @@ module.exports = {
   uploadVerificationDocuments,
   getVerificationStatus,
   recalculateTrustScore
-=======
-  getVendorProfile,
-  updateVendorProfile,
-  getVendorById,
-  searchVendors
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 };

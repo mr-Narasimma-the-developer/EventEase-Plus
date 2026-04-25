@@ -3,7 +3,6 @@ const User = require('../models/User');
 
 // Create Service (Provider Only)
 const createService = async (req, res) => {
-<<<<<<< HEAD
   try {
     console.log('Service creation request:', req.body);
     console.log('User:', req.user);
@@ -84,50 +83,6 @@ const getServices = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ message: 'Error fetching services', error: error.message });
-=======
-  const { serviceName, category, description, price, location } = req.body;
-
-  try {
-    // Check if user is a provider
-    if (req.user.role !== 'provider' && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Only providers can create services' });
-    }
-
-    const service = await Service.create({
-      providerId: req.user._id,
-      serviceName,
-      category,
-      description,
-      price,
-      location
-    });
-
-    res.status(201).json(service);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-};
-
-// Get All Services (with filters)
-const getServices = async (req, res) => {
-  const { category, location, minPrice, maxPrice } = req.query;
-
-  try {
-    let filter = { availability: true };
-
-    if (category) filter.category = category;
-    if (location) filter.location = { $regex: location, $options: 'i' };
-    if (minPrice || maxPrice) {
-      filter.price = {};
-      if (minPrice) filter.price.$gte = Number(minPrice);
-      if (maxPrice) filter.price.$lte = Number(maxPrice);
-    }
-
-    const services = await Service.find(filter).populate('providerId', 'name email phone rating isVerified');
-    res.json(services);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
   }
 };
 

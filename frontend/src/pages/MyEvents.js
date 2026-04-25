@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../utils/api';
-<<<<<<< HEAD
 import AttendancePrediction from '../components/AttendancePrediction';
-=======
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
 
 const MyEvents = () => {
   const [events, setEvents] = useState([]);
@@ -154,7 +151,6 @@ const MyEvents = () => {
                     </div>
                   </div>
 
-<<<<<<< HEAD
                   {/* Event Analytics Dashboard */}
 <div className="p-6">
   <h3 className="text-xl font-bold mb-4">📊 Event Analytics</h3>
@@ -168,8 +164,6 @@ const MyEvents = () => {
   </div>
 </div>
 
-=======
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
                   {/* AI Prediction Details */}
                   {event.prediction && (
                     <div className="bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg p-4 mb-6">
