@@ -421,6 +421,20 @@ const rejectVendorVerification = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error rejecting verification', error: error.message });
   }
+
+  // REPLACE THIS:
+const bookings = await Booking.find();
+const totalRevenue = bookings.reduce((sum, booking) => {
+  return sum + (booking.totalPrice || 0);
+}, 0);
+
+// WITH THIS:
+const { PLATFORM_COMMISSION_RATE } = require('./bookingController');
+const completedBookings = await Booking.find({ status: 'completed' });
+const totalBookingValue = completedBookings.reduce(
+  (sum, b) => sum + (b.totalPrice || 0), 0
+);
+const totalRevenue = Math.round(totalBookingValue * PLATFORM_COMMISSION_RATE);
 };
 
 module.exports = {

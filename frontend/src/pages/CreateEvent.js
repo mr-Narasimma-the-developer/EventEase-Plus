@@ -30,30 +30,57 @@ const CreateEvent = () => {
     setPosterFile(e.target.files[0]);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+  // In handleSubmit function, replace the try-catch block:
 
-    try {
-      const data = new FormData();
-      Object.keys(formData).forEach(key => {
-        data.append(key, formData[key]);
-      });
-      if (posterFile) {
-        data.append('poster', posterFile);
-      }
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+  setLoading(true);
 
-      await API.post('/events', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Error creating event');
-      setLoading(false);
+  try {
+    const formDataToSend = new FormData();
+    
+    // Append all fields
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('eventDate', formData.eventDate);
+    formDataToSend.append('location', formData.location);
+    formDataToSend.append('venue', formData.venue);
+    formDataToSend.append('category', formData.category);
+    formDataToSend.append('eventType', formData.eventType);
+    if (formData.maxAttendees) {
+      formDataToSend.append('maxAttendees', formData.maxAttendees);
     }
-  };
+    if (posterFile) {
+      formDataToSend.append('poster', posterFile);
+    }
+
+    console.log('Creating event with data:', formData);
+
+    const { data } = await API.post('/events', formDataToSend, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    console.log('Event created successfully:', data);
+
+    setError('Event created successfully! Redirecting...');
+    
+    // Redirect after 1 second
+    setTimeout(() => {
+      navigate(`/events/${data.event._id}`);
+    }, 1000);
+
+  } catch (error) {
+    console.error('Event creation error:', error);
+    
+    const errorMessage = error.response?.data?.message || 'Failed to create event. Please try again.';
+    setError(errorMessage);
+    
+    setLoading(false);
+  }
+};
 
   const handleTemplateSelect = (template) => {
     setFormData({

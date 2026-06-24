@@ -4,26 +4,75 @@ const Notification = require('../models/Notification');
 const { sendEventConfirmation } = require('../services/emailService');
 
 // Create Event (Organizer)
+// const createEvent = async (req, res) => {
+//   try {
+//     const { title, description, eventType, category, location, venue, eventDate, maxAttendees } = req.body;
+    
 const createEvent = async (req, res) => {
   try {
-    const { title, description, eventType, category, location, venue, eventDate, maxAttendees } = req.body;
-    
+    const {
+      title,
+      description,
+      eventDate,
+      location,
+      venue,
+      category,
+      privacy,
+      maxAttendees
+    } = req.body;
+
+    // Validation
+    if (!title || !description || !eventDate || !location || !venue || !category) {
+      return res.status(400).json({ message: 'All required fields must be filled' });
+    }
+
+    // Upload poster if provided
+    let posterUrl = '';
+    if (req.file) {
+      try {
+        const cloudinary = require('../config/cloudinary');
+        const result = await cloudinary.uploader.upload(req.file.path);
+        posterUrl = result.secure_url;
+      } catch (uploadError) {
+        console.error('Poster upload error:', uploadError);
+      }
+    }
+
+    // Create event
     const event = await Event.create({
       title,
       description,
-      organizerId: req.user._id,
-      eventType,
-      category,
+      eventDate: new Date(eventDate),
       location,
       venue,
-      eventDate,
-      maxAttendees,
-      posterImage: req.file ? req.file.path : null
+      category,
+      privacy: privacy || 'public',
+      maxAttendees: maxAttendees || null,
+      poster: posterUrl,
+      organizerId: req.user._id,
+      currentAttendees: 0,
+      interestedCount: 0,
+      confirmedCount: 0
     });
 
-    res.status(201).json(event);
+    // Populate and return (SINGLE RESPONSE)
+    const populatedEvent = await Event.findById(event._id)
+      .populate('organizerId', 'name email');
+
+    return res.status(201).json({
+      message: 'Event created successfully',
+      event: populatedEvent
+    });
+
   } catch (error) {
-    res.status(500).json({ message: 'Error creating event', error: error.message });
+    console.error('Event creation error:', error);
+    // Only send error if headers not sent
+    if (!res.headersSent) {
+      return res.status(500).json({ 
+        message: 'Error creating event', 
+        error: error.message 
+      });
+    }
   }
 };
 

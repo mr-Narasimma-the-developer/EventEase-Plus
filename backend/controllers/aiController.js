@@ -1,8 +1,48 @@
 const Event = require('../models/Event');
 const Service = require('../models/Service');
 
-<<<<<<< HEAD
-const chatbot = async (req, res) => {
+// ─── INTENT DETECTION ─────────────────────────────────────────────
+const detectIntent = (message) => {
+  const msg = message.toLowerCase();
+
+  if (/hello|hi|hey|greet|start|help me/i.test(msg))
+    return 'greeting';
+
+  if (/create.*event|how.*create|make.*event|organize|new event/i.test(msg))
+    return 'create_event';
+
+  if (/find.*event|search.*event|show.*event|upcoming|events|what.*event|discover/i.test(msg))
+    return 'find_events';
+
+  if (/vendor|photographer|caterer|catering|dj|decorator|service|provider|suggest.*vendor|need.*vendor|find.*vendor/i.test(msg))
+    return 'vendor_suggestion';
+
+  if (/budget|cost|price|expensive|how much|estimate/i.test(msg))
+    return 'budget_advice';
+
+  if (/plan|organize|how to|guide|help.*plan|tips|checklist/i.test(msg))
+    return 'event_planning';
+
+  return 'general';
+};
+
+// ─── FETCH PUBLIC EVENTS (FIXED QUERY) ────────────────────────────
+const fetchPublicEvents = async () => {
+  // CRITICAL FIX: Don't filter by privacy='public' strictly.
+  // Exclude only explicitly private events — handles both field names.
+  return await Event.find({
+    $and: [
+      { privacy:   { $ne: 'private' } },
+      { eventType: { $ne: 'private' } }
+    ]
+  })
+    .populate('organizerId', 'name')
+    .sort({ eventDate: 1 })
+    .limit(5);
+};
+
+// ─── AI CHATBOT CONTROLLER ────────────────────────────────────────
+const aiChatbot = async (req, res) => {
   try {
     const { message } = req.body;
 
@@ -10,246 +50,212 @@ const chatbot = async (req, res) => {
       return res.status(400).json({ message: 'Message is required' });
     }
 
-    const userMessage = message.toLowerCase();
+    console.log('🤖 Chatbot received:', message);
 
-    // Intent detection
-    let intent = 'general';
+    const intent = detectIntent(message);
+    console.log('🎯 Intent detected:', intent);
+
     let response = '';
 
-    // Greeting
-    if (/hello|hi|hey|greet|start|help me/i.test(userMessage)) {
-      intent = 'greeting';
-      response = "Hello! I'm EventEase+ AI Assistant. I can help you with:\n\n• Finding events near you\n• Discovering vendors and services\n• Planning your event budget\n• Getting event recommendations\n\nWhat would you like to know?";
-    }
-    // Create event
-    else if (/create.*event|how.*create|make.*event|organize|new event/i.test(userMessage)) {
-      intent = 'create_event';
-      response = "To create an event:\n\n1. Go to Menu → Create Event\n2. Fill in event details (title, date, location, description)\n3. Upload a poster (optional)\n4. Set privacy (public/private)\n5. Click 'Create Event'\n\nNeed help with event planning? I can suggest budget estimates and vendors!";
-    }
-    // Find events
-    else if (/find.*event|search.*event|discover.*event|show.*event|nearby|what.*event/i.test(userMessage)) {
-      intent = 'find_events';
-      const events = await Event.find({ privacy: 'public' })
-        .sort('-eventDate')
-        .limit(5)
-        .populate('organizerId', 'name');
+    switch (intent) {
 
-      if (events.length > 0) {
-        response = `Here are upcoming events:\n\n${events.map((e, i) => 
-          `${i + 1}. ${e.title}\n   📅 ${new Date(e.eventDate).toLocaleDateString()}\n   📍 ${e.location}`
-        ).join('\n\n')}`;
-      } else {
-        response = "No upcoming events found. Check back later or create your own event!";
-      }
-    }
-    // Vendor/service suggestions
-    else if (/vendor|photographer|caterer|service|provider|find.*vendor|suggest.*vendor/i.test(userMessage)) {
-      intent = 'vendor_suggestion';
-      const services = await Service.find()
-        .populate('providerId', 'name')
-        .limit(5);
+      // ── GREETING ──────────────────────────────────────────────────
+      case 'greeting':
+        response = `Hello! 👋 Welcome to EventEase+. I'm your AI assistant here to help you with:
 
-      if (services.length > 0) {
-        response = `⭐ Top Vendors:\n\n${services.map((s, i) => 
-          `${i + 1}. ${s.serviceName}\n   💼 By: ${s.providerId?.name}\n   💰 ₹${s.price}\n   📍 ${s.location}`
-        ).join('\n\n')}`;
-      } else {
-        response = "No services available at the moment. Check our marketplace for more options!";
-      }
-    }
-    // Budget advice
-    else if (/budget|cost|price|expensive|how much|estimate/i.test(userMessage)) {
-      intent = 'budget_advice';
-      response = "For a well-planned budget:\n\n✓ Use the Budget Estimator (in More menu)\n✓ Plan ₹500-600 per person for standard events\n✓ Book vendors 2-3 months early for better rates\n✓ Always keep 10-15% buffer for unexpected costs\n\nWhat's your total budget?";
-    }
-    // Event planning
-    else if (/plan|organize|how to|guide|help.*plan|tips/i.test(userMessage)) {
-      intent = 'event_planning';
-      response = "Event Planning Checklist:\n\n1️⃣ Set date & budget\n2️⃣ Choose venue & location\n3️⃣ Book vendors (caterer, photographer, etc.)\n4️⃣ Send invitations\n5️⃣ Confirm attendance\n6️⃣ Finalize details 1 week before\n\nNeed vendor recommendations? Just ask!";
-    }
-    // Default
-    else {
-      response = "I'm here to help with events and vendors! Try asking:\n\n• 'Find events near me'\n• 'Suggest photographers in Chennai'\n• 'Budget estimation'\n• 'How to create an event'\n\nWhat would you like to know?";
+- 🎉 Creating and managing events
+- 🤝 Finding the perfect verified vendors
+- 💰 Budget planning and cost estimation
+- 📅 Discovering upcoming events nearby
+
+How can I assist you today?`;
+        break;
+
+      // ── CREATE EVENT ──────────────────────────────────────────────
+      case 'create_event':
+        response = `I'd be happy to help you create an event! 🎉
+
+Here's what you need to do:
+1️⃣ Click "+ Create Event" in the top navbar
+2️⃣ Fill in: Title, Description, Date & Time, Venue, Location
+3️⃣ Choose a Category (Music, Workshop, Conference, Festival...)
+4️⃣ Upload a poster image (optional but recommended)
+5️⃣ Set Privacy (Public/Private) and Max Capacity
+6️⃣ Click Submit — your event goes live instantly!
+
+💡 Tip: Use our Event Templates for a quick start!
+
+Would you like tips on promoting your event after creating it?`;
+        break;
+
+      // ── FIND EVENTS ───────────────────────────────────────────────
+      case 'find_events':
+        try {
+          const events = await fetchPublicEvents();
+
+          console.log(`🔍 Chatbot found ${events.length} events`);
+
+          if (events.length === 0) {
+            response = `I checked but there are no public events listed right now. 📭
+
+Here's what you can do:
+- Check back soon — new events are added regularly!
+- Use the Dashboard filters to search by category or location
+- Or create your own event and invite others 🎉`;
+          } else {
+            response = `Here are the upcoming events I found for you! 🎉\n\n`;
+
+            events.forEach((event, i) => {
+              const date = new Date(event.eventDate).toLocaleDateString('en-IN', {
+                day: 'numeric', month: 'short', year: 'numeric'
+              });
+              response += `${i + 1}. 🎭 **${event.title}**\n`;
+              response += `   📅 ${date}\n`;
+              response += `   📍 ${event.venue ? event.venue + ', ' : ''}${event.location}\n`;
+              response += `   🏷️ ${event.category}\n`;
+              if (event.organizerId?.name) {
+                response += `   👤 By: ${event.organizerId.name}\n`;
+              }
+              response += `\n`;
+            });
+
+            response += `👉 Visit the Dashboard to see all events and register!`;
+          }
+        } catch (err) {
+          console.error('❌ Chatbot event fetch error:', err);
+          response = `I had trouble fetching events right now. Please visit the Dashboard directly to see all upcoming events! 📅`;
+        }
+        break;
+
+      // ── VENDOR SUGGESTION ─────────────────────────────────────────
+      case 'vendor_suggestion':
+        try {
+          const services = await Service.find({ availability: true })
+            .populate('providerId', 'name')
+            .sort({ rating: -1, totalBookings: -1 })
+            .limit(5);
+
+          if (services.length === 0) {
+            response = `No vendor services are listed yet. 😔
+
+Check out the **Marketplace** page to browse available services, or come back after vendors join the platform!`;
+          } else {
+            response = `Here are some top vendors I recommend for you! 🤝\n\n`;
+
+            services.forEach((svc, i) => {
+              response += `${i + 1}. 🏢 **${svc.serviceName}**\n`;
+              response += `   👤 Provider: ${svc.providerId?.name || 'N/A'}\n`;
+              response += `   💼 Category: ${svc.category}\n`;
+              response += `   💰 Price: ₹${svc.price?.toLocaleString()}\n`;
+              response += `   📍 Location: ${svc.location}\n`;
+              if (svc.rating > 0) {
+                response += `   ⭐ Rating: ${svc.rating}/5\n`;
+              }
+              response += `\n`;
+            });
+
+            response += `👉 Visit the **Marketplace** to compare vendors, check trust scores & book!`;
+          }
+        } catch (err) {
+          console.error('❌ Chatbot vendor fetch error:', err);
+          response = `Check out our **Marketplace** for a wide selection of verified vendors — photographers, caterers, decorators, DJs, and more! 🎯`;
+        }
+        break;
+
+      // ── BUDGET ADVICE ─────────────────────────────────────────────
+      case 'budget_advice':
+        response = `Let me help you plan your event budget! 💰
+
+**General Budget Breakdown:**
+- 🏛️ Venue: 25-30%
+- 🍽️ Catering: 30-35%
+- 🎵 Entertainment: 15-20%
+- 🎨 Decoration: 10-15%
+- 📸 Photography & Misc: 10-15%
+
+**Money-Saving Tips:**
+1. ✅ Book vendors early (saves 10-20%)
+2. ✅ Use our Vendor Comparison tool to get best prices
+3. ✅ Set budget before contacting vendors
+4. ✅ Prioritize must-haves over nice-to-haves
+5. ✅ Check verified vendors — they have transparent pricing
+
+💡 Use our **Budget Estimator Tool** (in the Organizer menu) for a detailed breakdown based on your event type, guest count, and location!
+
+What type of event are you planning? I can give more specific advice!`;
+        break;
+
+      // ── EVENT PLANNING GUIDE ──────────────────────────────────────
+      case 'event_planning':
+        response = `Here's your complete event planning guide! 📋
+
+1️⃣ **Define Your Event** (Week 1)
+   • Set objectives & target audience
+   • Fix budget and date
+   • Choose venue
+
+2️⃣ **Create on EventEase+** (Week 2)
+   • Create event with all details
+   • Upload poster
+   • Set capacity & privacy
+
+3️⃣ **Book Vendors** (Week 2-3)
+   • Browse Marketplace
+   • Use AI Vendor Recommendations
+   • Compare using our comparison tool
+   • Book early!
+
+4️⃣ **Promote** (Ongoing)
+   • Share on social media (our sharing tool)
+   • Send email invites
+   • Track registrations on dashboard
+
+5️⃣ **Day of Event**
+   • Use QR code for attendance scanning
+   • Monitor real-time attendee count
+   • Enjoy your event! 🎉
+
+6️⃣ **Post-Event**
+   • View analytics on dashboard
+   • Export attendance CSV
+   • Collect vendor reviews
+
+Need help with any specific step?`;
+        break;
+
+      // ── GENERAL ───────────────────────────────────────────────────
+      default:
+        response = `I'm here to help with your event planning! 🤖
+
+Here's what I can do:
+
+🎉 **Events** — Find upcoming events or help you create one
+🤝 **Vendors** — Suggest vendors for your event needs
+💰 **Budget** — Estimate costs and allocation tips
+📋 **Planning** — Step-by-step event planning guide
+
+Just ask me something like:
+- "Show me upcoming events"
+- "I need a catering vendor"
+- "Help me plan my budget"
+- "How do I create an event?"
+
+What would you like to know?`;
     }
 
-    res.json({
+    return res.json({
+      message: response,
       intent,
-      response,
       timestamp: new Date()
     });
 
   } catch (error) {
-    console.error('Chatbot error:', error);
-    res.status(500).json({ message: 'Error processing request', error: error.message });
-  }
-};
-
-module.exports = { chatbot };
-=======
-const chatResponses = {
-  greetings: [
-    "Hello! I'm your EventEase+ AI assistant. I can help you with:\n• Creating events\n• Finding vendors\n• Budget planning\n• Event recommendations\n\nWhat would you like help with?",
-    "Hi there! I'm here to help you plan amazing events. Ask me about vendors, budgets, or event planning tips!",
-    "Welcome! I can assist with event planning, vendor selection, and budget estimation. How can I help you today?"
-  ],
-  
-  eventPlanning: [
-    "Great! Here's how to create a successful event:\n\n1. Define your event type and audience\n2. Set a realistic budget\n3. Book venue early (2-3 months ahead)\n4. Select vendors based on trust scores\n5. Promote your event\n\nNeed help with any specific step?",
-    "I can help you plan! First, tell me:\n• What type of event? (music, workshop, conference, etc.)\n• How many people?\n• What's your budget?\n\nI'll suggest the perfect vendors!",
-    "Event planning made easy:\n• Use our Budget Estimator for cost planning\n• Check Vendor Recommendations for trusted providers\n• Create your event and track analytics\n\nWhat's your event about?"
-  ],
-  
-  vendorSuggestion: [
-    "Looking for vendors? Here's what I recommend:\n\n1. Go to 'Vendors & Services' in the menu\n2. Use filters for location and budget\n3. Check vendor Trust Scores (aim for 70+)\n4. Look for verified badges ✓\n\nOr use 'Find Vendors (AI)' for smart recommendations!",
-    "I can help you find the perfect vendors! Tell me:\n• What service do you need? (catering, photography, etc.)\n• Your budget range?\n• Preferred location?\n\nI'll find vendors with high trust scores!",
-    "Smart vendor selection:\n• Trust Score above 70 = Reliable\n• Verified badge = Admin approved\n• Check completed events count\n• Read reviews from real clients\n\nWant me to search for specific vendors?"
-  ],
-  
-  budgetAdvice: [
-    "Budget Planning Guide:\n\n💰 Typical breakdown:\n• Venue: 30%\n• Catering: 35%\n• Entertainment: 20%\n• Decoration: 10%\n• Other: 5%\n\nUse our Budget Estimator tool for accurate calculations!",
-    "For a well-planned budget:\n\n✓ Use the Budget Estimator (in More menu)\n✓ Plan ₹500-600 per person for standard events\n✓ Book vendors 2-3 months early for better rates\n✓ Always keep 10-15% buffer for unexpected costs\n\nWhat's your total budget?",
-    "Budget Tips:\n• Music events: ₹500-600/person\n• Workshops: ₹300-400/person\n• Conferences: ₹400-500/person\n\nGo to 'Budget Estimator' for detailed breakdown!"
-  ],
-  
-  createEvent: [
-    "To create an event:\n\n1. Click 'Create Event' button (top right)\n2. Fill in event details\n3. Upload a poster image\n4. Set capacity and date\n5. Publish!\n\nYour event will appear in the feed immediately. Want me to guide you?",
-    "Creating events is easy! You need:\n• Event title and description\n• Date and venue\n• Category (music, workshop, etc.)\n• Optional: poster image\n\nGo to the '+Create Event' button to start!"
-  ],
-  
-  findEvents: [
-    "To discover events:\n\n1. Check your Dashboard (Home) for event feed\n2. Use filters on the left sidebar\n3. Click events to see details\n4. Show Interest or Confirm Attendance\n\nI can also help you find events by category. What interests you?"
-  ]
-};
-
-const detectIntent = (message) => {
-  const msg = message.toLowerCase();
-  
-  if (msg.match(/hello|hi|hey|greet|start|help me/i)) return 'greetings';
-  if (msg.match(/create.*event|how.*create|make.*event|organize|new event/i)) return 'createEvent';
-  if (msg.match(/find.*event|search.*event|discover.*event|show.*event|nearby|what.*event/i)) return 'findEvents';
-  if (msg.match(/vendor|photographer|caterer|service|provider|find.*vendor|suggest.*vendor/i)) return 'vendorSuggestion';
-  if (msg.match(/budget|cost|price|expensive|how much|estimate/i)) return 'budgetAdvice';
-  if (msg.match(/plan|organize|how to|guide|help.*plan|tips/i)) return 'eventPlanning';
-  
-  return 'general';
-};
-
-const getAIResponse = async (req, res) => {
-  try {
-    const { message } = req.body;
-    
-    const intent = detectIntent(message);
-    
-    let response;
-    
-    switch(intent) {
-      case 'greetings':
-        response = chatResponses.greetings[Math.floor(Math.random() * chatResponses.greetings.length)];
-        break;
-        
-      case 'createEvent':
-        response = chatResponses.createEvent[Math.floor(Math.random() * chatResponses.createEvent.length)];
-        break;
-        
-      case 'findEvents':
-        response = chatResponses.findEvents[0];
-        
-        const events = await Event.find({ eventType: 'public', status: 'upcoming' })
-          .limit(5)
-          .populate('organizerId', 'name')
-          .sort('eventDate');
-        
-        if (events.length > 0) {
-          response += "\n\n📅 Upcoming Events:\n\n";
-          events.forEach((e, i) => {
-            response += `${i + 1}. ${e.title}\n   📍 ${e.location} | 📅 ${new Date(e.eventDate).toLocaleDateString()}\n\n`;
-          });
-        }
-        break;
-        
-      case 'eventPlanning':
-        response = chatResponses.eventPlanning[Math.floor(Math.random() * chatResponses.eventPlanning.length)];
-        break;
-        
-      case 'vendorSuggestion':
-        response = chatResponses.vendorSuggestion[Math.floor(Math.random() * chatResponses.vendorSuggestion.length)];
-        
-        const vendors = await Service.find().limit(3).populate('providerId', 'name isVerified');
-        if (vendors.length > 0) {
-          response += "\n\n⭐ Top Vendors:\n\n";
-          vendors.forEach((v, i) => {
-            response += `${i + 1}. ${v.serviceName}\n   By: ${v.providerId?.name} ${v.providerId?.isVerified ? '✓' : ''}\n   Price: ₹${v.price}/person\n\n`;
-          });
-        }
-        break;
-        
-      case 'budgetAdvice':
-        response = chatResponses.budgetAdvice[Math.floor(Math.random() * chatResponses.budgetAdvice.length)];
-        break;
-        
-      default:
-        response = "I can help you with:\n\n🎯 Finding events\n📅 Creating events\n👥 Vendor recommendations\n💰 Budget planning\n\nJust ask me anything about these topics!";
-    }
-    
-    setTimeout(() => {
-      res.json({
-        message: response,
-        intent,
-        timestamp: new Date()
-      });
-    }, 800);
-    
-  } catch (error) {
-    res.status(500).json({ message: 'AI service error', error: error.message });
-  }
-};
-
-// Fake Attendance Prediction
-const predictAttendance = async (req, res) => {
-  try {
-    const { eventId } = req.params;
-    
-    const event = await Event.findById(eventId);
-    
-    if (!event) {
-      return res.status(404).json({ message: 'Event not found' });
-    }
-
-    const baseRate = 0.6;
-    const categoryBoost = event.category === 'music' ? 0.15 : event.category === 'workshop' ? 0.1 : 0.05;
-    const typeBoost = event.eventType === 'public' ? 0.1 : 0;
-    const locationBoost = 0.05;
-    
-    const predictedRate = Math.min(baseRate + categoryBoost + typeBoost + locationBoost, 0.95);
-    const predictedAttendees = event.maxAttendees 
-      ? Math.round(event.maxAttendees * predictedRate)
-      : Math.round(100 * predictedRate);
-    
-    const confidence = 75 + Math.floor(Math.random() * 15);
-    
-    res.json({
-      eventId,
-      predictedAttendees,
-      predictedRate: Math.round(predictedRate * 100),
-      confidence,
-      factors: {
-        category: event.category,
-        eventType: event.eventType,
-        timing: 'optimal',
-        location: 'favorable'
-      },
-      recommendation: predictedRate > 0.7 
-        ? "High interest expected! Consider increasing capacity."
-        : "Moderate interest. Promote more on social media."
+    console.error('❌ AI Chatbot error:', error);
+    return res.status(500).json({
+      message: 'Sorry, I encountered an error. Please try again.',
+      error: error.message
     });
-    
-  } catch (error) {
-    res.status(500).json({ message: 'Prediction error', error: error.message });
   }
 };
 
-module.exports = {
-  getAIResponse,
-  predictAttendance
-};
->>>>>>> ed34da906bb3faf0ea102d18bd8c416990098710
+module.exports = { aiChatbot };

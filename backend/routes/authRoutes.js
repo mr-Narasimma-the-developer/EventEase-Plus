@@ -3,18 +3,16 @@ const router = express.Router();
 
 const { protect } = require('../middleware/authMiddleware');
 
-// ✅ FIX: correct names from controller
 const {
   registerUser,
   loginUser,
-  getUserProfile,
+  getMe,            // ✅ CORRECT NAME
   updateProfile
 } = require('../controllers/authController');
 
-// Routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
-router.get('/profile', protect, getUserProfile);
+router.get('/profile', protect, getMe);   // ✅ FIXED
 router.put('/profile', protect, updateProfile);
 
 module.exports = router;

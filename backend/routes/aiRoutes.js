@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');
-const { chatbot } = require('../controllers/aiController');
+const { aiChatbot } = require('../controllers/aiController');
 
-router.post('/chat', protect, chatbot);
+// AI Chatbot endpoint
+router.post('/chat', aiChatbot);
 
 module.exports = router;

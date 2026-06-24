@@ -6,20 +6,12 @@ require('dotenv').config();
 const createDefaultAdmin = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    
-    console.log('Connected to MongoDB');
+    console.log('✅ Connected to MongoDB');
 
-    // Check if admin already exists
-    const existingAdmin = await User.findOne({ email: 'admin@eventease.com' });
+    // Delete any existing admin
+    await User.deleteOne({ email: 'admin@eventease.com' });
     
-    if (existingAdmin) {
-      console.log('Admin user already exists!');
-      console.log('Email: admin@eventease.com');
-      console.log('Password: Admin@123');
-      process.exit(0);
-    }
-
-    // Create admin user
+    // Create fresh admin
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash('Admin@123', salt);
 
@@ -35,17 +27,15 @@ const createDefaultAdmin = async () => {
       pincode: '000000'
     });
 
-    console.log('✅ Admin user created successfully!');
-    console.log('==========================================');
-    console.log('Email: admin@eventease.com');
-    console.log('Password: Admin@123');
-    console.log('==========================================');
-    console.log('Use these credentials to login as admin');
+    console.log('\n✅ ADMIN CREATED SUCCESSFULLY!');
+    console.log('═══════════════════════════════════════');
+    console.log('📧 Email:    admin@eventease.com');
+    console.log('🔑 Password: Admin@123');
+    console.log('═══════════════════════════════════════\n');
 
     process.exit(0);
-
   } catch (error) {
-    console.error('Error creating admin:', error);
+    console.error('❌ Error:', error.message);
     process.exit(1);
   }
 };

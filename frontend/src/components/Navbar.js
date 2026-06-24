@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
@@ -6,336 +6,181 @@ const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleLogout = () => {
     logout();
+    setIsDropdownOpen(false);
     navigate('/login');
-  };
-
-  const toggleDropdown = (e) => {
-    e.stopPropagation();
-    setIsDropdownOpen(!isDropdownOpen);
   };
 
   const closeDropdown = () => {
     setIsDropdownOpen(false);
   };
 
-  // Close dropdown when clicking anywhere on page
-  React.useEffect(() => {
-    const handleClick = () => setIsDropdownOpen(false);
-    if (isDropdownOpen) {
-      document.addEventListener('click', handleClick);
+  // CRITICAL: Get menu items based on role
+  const getMenuItems = () => {
+    if (!user) return [];
+
+    console.log('Building menu for role:', user.role);
+
+    const menuItems = [];
+
+    // Admin menu
+    if (user.role === 'admin') {
+      menuItems.push(
+        { icon: '⚙️', label: 'Admin Panel', path: '/admin' },
+        { icon: '🔔', label: 'Notifications', path: '/notifications' },
+        { icon: '🗺️', label: 'Event Heatmap', path: '/event-heatmap' },
+        { icon: '👤', label: 'Profile', path: '/profile' }
+      );
     }
-    return () => document.removeEventListener('click', handleClick);
-  }, [isDropdownOpen]);
+
+    // Organizer menu
+    else if (user.role === 'organizer') {
+      menuItems.push(
+        { icon: '📅', label: 'My Events', path: '/my-events' },
+        { icon: '💰', label: 'Budget Estimator', path: '/budget-estimator' },
+        { icon: '🤖', label: 'AI Vendor Finder', path: '/vendor-recommendations' },
+        { icon: '🗺️', label: 'Event Heatmap', path: '/event-heatmap' },
+        { icon: '🔔', label: 'Notifications', path: '/notifications' },
+        { icon: '👤', label: 'Profile', path: '/profile' }
+      );
+    }
+
+    // Vendor menu
+    else if (user.role === 'vendor') {
+      menuItems.push(
+        { icon: '📋', label: 'My Services', path: '/my-services' },
+        { icon: '🎨', label: 'Portfolio', path: '/portfolio' },
+        { icon: '✅', label: 'Get Verified', path: '/get-verified' },
+        { icon: '🔔', label: 'Notifications', path: '/notifications' },
+        { icon: '👤', label: 'Profile', path: '/profile' },
+        { icon: '📋', label: 'My Bookings', path: '/vendor-bookings' },
+      );
+    }
+
+    // Participant menu
+    else if (user.role === 'participant') {
+      menuItems.push(
+        { icon: '🗺️', label: 'Event Heatmap', path: '/event-heatmap' },
+        { icon: '🔔', label: 'Notifications', path: '/notifications' },
+        { icon: '👤', label: 'Profile', path: '/profile' }
+      );
+    }
+
+    console.log('Menu items generated:', menuItems.length);
+    return menuItems;
+  };
+
+  const menuItems = getMenuItems();
 
   return (
-    <nav className="bg-indigo-600 text-white shadow-lg relative z-50">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex justify-between items-center">
+    <nav className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold" onClick={closeDropdown}>
+          <Link to="/" className="text-2xl font-bold hover:opacity-90 transition">
             EventEase+
           </Link>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-6">
+          {/* Navigation Links */}
+          <div className="flex items-center space-x-6">
+            <Link to="/dashboard" className="hover:text-indigo-200 transition font-medium">
+              Home
+            </Link>
+
+            <Link to="/marketplace" className="hover:text-indigo-200 transition font-medium">
+              Vendors & Services
+            </Link>
+
+            {/* Create Event Button (Organizer only) */}
+            {user && user.role === 'organizer' && (
+              <Link
+                to="/create-event"
+                className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-50 transition"
+              >
+                + Create Event
+              </Link>
+            )}
+
             {user ? (
-              <>
-                <Link to="/dashboard" className="hover:text-indigo-200" onClick={closeDropdown}>
-                  Home
-                </Link>
-                
-                <Link to="/marketplace" className="hover:text-indigo-200" onClick={closeDropdown}>
-                  Vendors & Services
-                </Link>
-                
-                {user.role === 'organizer' && (
-                  <Link 
-                    to="/create-event" 
-                    className="bg-white text-indigo-600 px-4 py-2 rounded hover:bg-indigo-50 font-semibold"
-                    onClick={closeDropdown}
-                  >
-                    + Create Event
-                  </Link>
-                )}
+              <div className="relative" ref={dropdownRef}>
+                {/* User Menu Button */}
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center space-x-2 hover:text-indigo-200 transition"
+                >
+                  <span className="font-medium">Menu</span>
+                  <span className="text-xl">▼</span>
+                </button>
 
                 {/* Dropdown Menu */}
-                <div className="relative">
-                  <button
-                    onClick={toggleDropdown}
-                    className="hover:text-indigo-200 flex items-center space-x-1 px-3 py-2 rounded focus:outline-none focus:bg-indigo-700"
-                  >
-                    <span>Menu</span>
-                    <svg 
-                      className={`w-4 h-4 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
-                      fill="currentColor" 
-                      viewBox="0 0 20 20"
-                    >
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                  </button>
-
-                  {/* Dropdown Panel */}
-                  {isDropdownOpen && (
-                    <div 
-                      className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-200"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {/* Vendor Options */}
-                      {user.role === 'vendor' && (
-                        <>
-                          <Link
-                            to="/my-services"
-                            className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-                            onClick={closeDropdown}
-                          >
-                            <span className="mr-2">📋</span>
-                            My Services
-                          </Link>
-                          <Link
-                            to="/vendor/portfolio"
-                            className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-                            onClick={closeDropdown}
-                          >
-                            <span className="mr-2">🎨</span>
-                            Portfolio
-                          </Link>
-                          <div className="border-t my-1"></div>
-                        </>
-                      )}
-
-                      {/* Organizer Options */}
-                      {user.role === 'organizer' && (
-  <>
-    <Link
-      to="/my-events"
-      className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-      onClick={closeDropdown}
-    >
-      <span className="mr-2">📅</span>
-      My Events
-    </Link>
-    <Link
-      to="/budget-estimator"
-      className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-      onClick={closeDropdown}
-    >
-      <span className="mr-2">💰</span>
-      Budget Estimator
-    </Link>
-    <Link
-      to="/vendor-recommendations"
-      className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-      onClick={closeDropdown}
-    >
-      <span className="mr-2">🎯</span>
-      AI Vendor Finder
-    </Link>
-    <div className="border-t my-1"></div>
-  </>
-)}
-                      {/* Admin Options */}
-                      {user.role === 'admin' && (
-                        <>
-                          <Link
-                            to="/admin"
-                            className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-                            onClick={closeDropdown}
-                          >
-                            <span className="mr-2">⚙️</span>
-                            Admin Panel
-                          </Link>
-                          <div className="border-t my-1"></div>
-                        </>
-                      )}
-
-                      {/* Common Options */}
-                      <Link
-                        to="/notifications"
-                        className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-                        onClick={closeDropdown}
-                      >
-                        <span className="mr-2">🔔</span>
-                        Notifications
-                      </Link>
-                      <hr className="my-2" />
-
-
-<Link
-  to="/event-heatmap"
-  className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-  onClick={closeDropdown}
->
-  <span className="mr-2">🗺️</span>
-  Event Heatmap
-</Link>
-
-<Link
-  to="/notifications"
-  className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-  onClick={closeDropdown}
->
-  <span className="mr-2">🔔</span>
-  Notifications
-</Link>
-                      <Link
-                        to="/profile"
-                        className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-                        onClick={closeDropdown}
-                      >
-                        <span className="mr-2">👤</span>
-                        Profile
-                      </Link>
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-50">
+                    {/* User Info */}
+                    <div className="px-4 py-3 border-b border-gray-200">
+                      <p className="font-semibold text-gray-800">{user.name}</p>
+                      <p className="text-sm text-gray-600">{user.email}</p>
+                      <p className="text-xs text-indigo-600 font-semibold mt-1">
+                        Role: {user.role?.charAt(0).toUpperCase() + user.role?.slice(1)}
+                      </p>
                     </div>
-                  )}
-                </div>
 
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 px-4 py-2 rounded hover:bg-red-600 font-semibold"
-                >
-                  Logout
-                </button>
-              </>
+                    {/* Menu Items */}
+                    {menuItems.map((item, index) => (
+                      <Link
+                        key={index}
+                        to={item.path}
+                        onClick={closeDropdown}
+                        className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50 transition"
+                      >
+                        <span className="mr-3 text-lg">{item.icon}</span>
+                        <span className="font-medium">{item.label}</span>
+                      </Link>
+                    ))}
+
+                    {/* Logout */}
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center px-4 py-2 text-red-600 hover:bg-red-50 transition border-t border-gray-200 mt-2"
+                    >
+                      <span className="mr-3 text-lg">🚪</span>
+                      <span className="font-medium">Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
-              <>
-                <Link to="/login" className="hover:text-indigo-200" onClick={closeDropdown}>
-                  Login
-                </Link>
-                <Link 
-                  to="/register" 
-                  className="bg-white text-indigo-600 px-4 py-2 rounded hover:bg-indigo-50 font-semibold"
-                  onClick={closeDropdown}
-                >
-                  Register
-                </Link>
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden focus:outline-none"
-            onClick={toggleDropdown}
-          >
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Mobile Dropdown */}
-        {isDropdownOpen && (
-          <div className="md:hidden mt-4 pb-4 space-y-2">
-            {user ? (
-              <>
-                <Link to="/dashboard" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
-                  🏠 Home
-                </Link>
-                <Link to="/marketplace" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
-                  🏪 Vendors & Services
-                </Link>
-                
-                {user.role === 'organizer' && (
-                  <>
-                    <Link to="/create-event" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
-                      ➕ Create Event
-                    </Link>
-                    <Link to="/my-events" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
-                      📅 My Events
-                    </Link>
-                  </>
-                )}
-                
-                {user.role === 'vendor' && (
-                  <>
-                    <Link to="/my-services" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
-                      📋 My Services
-                    </Link>
-                    <Link to="/vendor/portfolio" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
-                      🎨 Portfolio
-                    </Link>
-                  </>
-                )}
-
-                {user.role === 'vendor' && (
-  <>
-    <Link
-      to="/my-services"
-      className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-      onClick={closeDropdown}
-    >
-      <span className="mr-2">📋</span>
-      My Services
-    </Link>
-    <Link
-      to="/vendor/portfolio"
-      className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-      onClick={closeDropdown}
-    >
-      <span className="mr-2">🎨</span>
-      Portfolio
-    </Link>
-    <Link
-      to="/vendor/verification"
-      className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-      onClick={closeDropdown}
-    >
-      <span className="mr-2">✓</span>
-      Get Verified
-    </Link>
-    <div className="border-t my-1"></div>
-  </>
-)}
-                
-                {/* <Link to="/notifications" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
-                  🔔 Notifications
-                </Link> */}
-                <Link to="/profile" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
-                  👤 Profile
-                </Link>
-                
+              <div className="flex items-center space-x-4">
                 <Link
-  to="/event-heatmap"
-  // className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-  onClick={closeDropdown}
->
-  <span className="mr-2">🗺️</span>
-  Event Heatmap
-</Link>
-
-{/* <hr className="my-2" />
-
-<Link
-  to="/notifications"
-  className="flex items-center px-4 py-2 text-gray-800 hover:bg-indigo-50"
-  onClick={closeDropdown}
->
-  <span className="mr-2">🔔</span>
-  Notifications
-</Link> */}
-
-                <button
-                  onClick={handleLogout}
-                  className="block w-full text-left py-2 hover:text-indigo-200"
+                  to="/login"
+                  className="hover:text-indigo-200 transition font-medium"
                 >
-                  🚪 Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
                   Login
                 </Link>
-                <Link to="/register" className="block py-2 hover:text-indigo-200" onClick={closeDropdown}>
+                <Link
+                  to="/register"
+                  className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-indigo-50 transition"
+                >
                   Register
                 </Link>
-              </>
+              </div>
             )}
           </div>
-        )}
+        </div>
       </div>
     </nav>
   );

@@ -3,73 +3,73 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: [true, 'Please provide a name'],
+    trim: true
   },
   email: {
     type: String,
-    required: true,
-    unique: true
+    required: [true, 'Please provide an email'],
+    unique: true,
+    lowercase: true,
+    trim: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
   },
   password: {
     type: String,
-    required: true
+    required: [true, 'Please provide a password'],
+    minlength: 6
   },
   role: {
     type: String,
     enum: ['participant', 'organizer', 'vendor', 'admin'],
-    default: 'participant'
-  },
-   verified: {
-    type: Boolean,
-    default: false
-  },
-  preferences: {
-    eventCategories: [String],
-    notificationEnabled: { type: Boolean, default: true }
-  },
-  coordinates: {
-    lat: Number,
-    lng: Number
+    default: 'participant',
+    required: [true, 'Please provide a role']
   },
   phone: {
-    type: String
+    type: String,
+    default: ''
   },
   location: {
-    type: String
+    type: String,
+    default: ''
   },
-  isVerified: {
-    type: Boolean,
-    default: false
+  city: {
+    type: String,
+    default: ''
   },
-  rating: {
-    type: Number,
-    default: 0
+  state: {
+    type: String,
+    default: ''
   },
-totalBookings: {
-  type: Number,
-  default: 0
-},
-// ADD THESE FIELDS TO YOUR EXISTING USER SCHEMA
-address: {
-  type: String
-},
-city: {
-  type: String
-},
-state: {
-  type: String
-},
-pincode: {
-  type: String
-},
-bio: {
-  type: String
-}
+  pincode: {
+    type: String,
+    default: ''
+  }
+}, {
+  timestamps: true
+});
 
+// Index for faster queries
+userSchema.index({ email: 1 });
+userSchema.index({ role: 1 });
 
-}, { timestamps: true });
+// Log before save
+userSchema.pre('save', function(next) {
+  console.log('💾 Saving user:', {
+    email: this.email,
+    role: this.role,
+    isNew: this.isNew
+  });
+  next();
+});
 
-
-
+// Log after save
+userSchema.post('save', function(doc) {
+  console.log('✅ User saved:', {
+    id: doc._id,
+    email: doc.email,
+    role: doc.role
+  });
+});
 
 module.exports = mongoose.model('User', userSchema);
