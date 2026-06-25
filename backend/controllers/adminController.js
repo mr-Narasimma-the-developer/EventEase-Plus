@@ -424,9 +424,9 @@ const rejectVendorVerification = async (req, res) => {
 
   // REPLACE THIS:
 const bookings = await Booking.find();
-const totalRevenue = bookings.reduce((sum, booking) => {
-  return sum + (booking.totalPrice || 0);
-}, 0);
+// const totalRevenue = bookings.reduce((sum, booking) => {
+//   return sum + (booking.totalPrice || 0);
+// }, 0);
 
 // WITH THIS:
 const { PLATFORM_COMMISSION_RATE } = require('./bookingController');
